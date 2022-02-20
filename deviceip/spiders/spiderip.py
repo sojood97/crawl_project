@@ -4,7 +4,7 @@ import itertools
 
 class SpideripSpider(scrapy.Spider):
     name = 'spiderip'
-    start_urls = ['https://me.motorsport.com/']
+    start_urls = ['https://me.motorsport.com/f1/news/?p=1']
     resulted_data = {}
     counter=0
 
@@ -37,6 +37,7 @@ class SpideripSpider(scrapy.Spider):
     def parse_page4(self, response): 
         self.scraping_data( response)
 
+        
         yield dict(itertools.islice(self.resulted_data.items(), 0,25,1))  
         yield dict(itertools.islice(self.resulted_data.items(), 25,50,1))
         yield dict(itertools.islice(self.resulted_data.items(), 50,75,1))
@@ -49,22 +50,24 @@ class SpideripSpider(scrapy.Spider):
 
 
     def scraping_data(self, response):
-        data=response.xpath('//*')
-        for data_scrapped in data:
-            title = data_scrapped.xpath('.//div[@class="ms-item_info"]/a[@class="ms-item_link ms-item_link--text"]/text()').extract()
-            text  = data_scrapped.xpath('.//p[@class="ms-item_subheader"]/text()').extract()
-            img_url=data_scrapped.xpath('.//div[@class="ms-item_thumb"]/a[@class="ms-item_link"]/picture/img/@src').extract()
-            category=data_scrapped.xpath('.//div[@class="ms-item_info-top"]/div[@class="ms-item_series"]/span[@class="ms-item_series--title"]/text()').extract()
-            self.resulted_data[self.counter] = {
-                'text': text,
-                'title': title,
-                'category': category,
-                'img_url' :img_url,
-            }
-           
-            self.counter=self.counter+1
+        titles = response.xpath('.//div[@class="ms-item--art "]/div[@class="ms-item_info"]/p[@class="ms-item_title"]/a[@class="ms-item_link ms-item_link--text"]/text()').extract()
+        texts  = response.xpath('.//div[@class="ms-item_info"]/div[@class="ms-item_subheader-wrapper"]/p[@class="ms-item_subheader"]/text()').extract()
+        img_urls=response.xpath('.//div[@class="ms-item--art "]/div[@class="ms-item_thumb"]/a[@class="ms-item_link"]/picture/img/@src').extract()
+        categories=response.xpath('.//div[@class="ms-item_info-top"]/div[@class="ms-item_series"]/a[@class="ms-item_link"]/span[@class="ms-item_series--title"]/text()').extract()
 
+        for idx, img_urls in enumerate(img_urls):
+               self.resulted_data[self.counter] = {
+                'text': texts[idx],
+                'title': titles[idx],
+                'img_url' :img_urls,
+                'categorie' :categories[idx],
+            }
+            
+            
+        self.counter=self.counter+1
         
+        
+            
 
 
         
